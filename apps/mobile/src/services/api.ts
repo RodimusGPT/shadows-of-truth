@@ -1,14 +1,19 @@
 import { ChatRequest, ChatResponse, GameState } from '@shadows/shared';
 
+const RENDER_API = 'https://shadows-of-truth-api.onrender.com';
+
 function getApiBase(): string {
-  // In web, try the Expo public env var first
+  // Explicit override via env var
   if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
-  // In browser: use same origin — Metro proxies /api to the Fastify server.
-  // This avoids CORS issues in cloud IDEs where each port is a different origin.
+  // In browser: if running on localhost, use same origin (Metro proxy for dev).
+  // Otherwise (production static site), use the Render API.
   if (typeof window !== 'undefined' && window.location) {
-    return window.location.origin;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return window.location.origin;
+    }
+    return RENDER_API;
   }
   return 'http://localhost:3000';
 }
