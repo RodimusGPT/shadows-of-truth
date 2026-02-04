@@ -7,9 +7,13 @@ services:
     envVars:
       - key: PORT
         value: "3000"
+      - key: HOST
+        value: "0.0.0.0"
       - key: LLM_PROVIDER
-        value: claude
-      - key: ANTHROPIC_API_KEY
+        value: gemini
+      - key: GEMINI_API_KEY
         sync: false
+      - key: GEMINI_MODEL
+        value: gemma-3-27b-it
     healthCheckPath: /health
     plan: free
