@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: shadows-of-truth-api
+    runtime: docker
+    dockerfilePath: apps/server/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: LLM_PROVIDER
+        value: claude
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    healthCheckPath: /health
+    plan: free

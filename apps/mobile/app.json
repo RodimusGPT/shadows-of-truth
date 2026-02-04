@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Shadows of Truth",
+    "slug": "shadows-of-truth",
+    "version": "1.0.0",
+    "scheme": "shadows",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0A0A0F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.shadows.truth"
+    },
+    "android": {
+      "package": "com.shadows.truth",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A0F"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-asset"
+    ]
+  }
+}
