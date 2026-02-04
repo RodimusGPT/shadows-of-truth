@@ -18,17 +18,7 @@ export function parseResponse(raw: string): ParsedResponse {
   const dialogueMatch = raw.match(/<dialogue>([\s\S]*?)<\/dialogue>/);
   const stateMatch = raw.match(/<state_changes>([\s\S]*?)<\/state_changes>/);
 
-  if (!dialogueMatch) {
-    // Fallback: treat entire response as dialogue with no state changes
-    return {
-      dialogue: raw.trim(),
-      stateChanges: {},
-      raw,
-    };
-  }
-
-  const dialogue = dialogueMatch[1].trim();
-
+  // Parse state changes (works whether or not <dialogue> tags are present)
   let stateChanges: StateChange = {};
   if (stateMatch) {
     try {
@@ -41,9 +31,20 @@ export function parseResponse(raw: string): ParsedResponse {
         locationUnlock: validated.location_unlock.length > 0 ? validated.location_unlock : undefined,
       };
     } catch {
-      // If state_changes JSON is malformed, proceed with just dialogue
       stateChanges = {};
     }
+  }
+
+  // Extract dialogue: use <dialogue> tags if present, otherwise strip XML tags from raw
+  let dialogue: string;
+  if (dialogueMatch) {
+    dialogue = dialogueMatch[1].trim();
+  } else {
+    // Fallback: strip any <state_changes> block and other XML tags from the response
+    dialogue = raw
+      .replace(/<state_changes>[\s\S]*?<\/state_changes>/g, '')
+      .replace(/<\/?dialogue>/g, '')
+      .trim();
   }
 
   return { dialogue, stateChanges, raw };

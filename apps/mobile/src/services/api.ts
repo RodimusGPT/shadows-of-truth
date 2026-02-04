@@ -22,7 +22,7 @@ const API_BASE = getApiBase();
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
-  console.log(`[API] ${options?.method ?? 'GET'} ${url}`);
+  if (__DEV__) console.log(`[API] ${options?.method ?? 'GET'} ${url}`);
 
   const response = await fetch(url, {
     ...options,

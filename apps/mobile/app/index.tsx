@@ -17,11 +17,9 @@ export default function HomeScreen() {
     setError(null);
     try {
       const { gameId, state } = await api.newGame('missing-heiress');
-      console.log('[NewGame] Created game:', gameId);
       useChatStore.getState().clearMessages();
       useGameStore.setState({ gameState: state, error: null });
       await storage.saveCurrentGameId(gameId);
-      console.log('[NewGame] State set, navigating to /chat');
       router.push('/chat');
     } catch (err) {
       setError((err as Error).message);
