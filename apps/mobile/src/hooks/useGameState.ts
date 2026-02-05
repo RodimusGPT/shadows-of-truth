@@ -23,7 +23,7 @@ export function useGameState() {
         if (id && !current) loadGame(id);
       });
     }
-  }, []);
+  }, [gameState, isLoading, loadGame]);
 
   return {
     gameState,

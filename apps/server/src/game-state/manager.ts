@@ -5,6 +5,17 @@ import { applyAction, applyActions } from './mutations';
 /** In-memory game store — replace with persistence layer later */
 const games = new Map<string, GameState>();
 
+/** Cleanup games inactive for more than 24 hours to prevent memory leaks */
+const GAME_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, state] of games) {
+    if (now - state.updatedAt > GAME_TTL_MS) {
+      games.delete(id);
+    }
+  }
+}, 60 * 60 * 1000); // Run cleanup every hour
+
 export function createGame(caseDefinition: CaseDefinition): GameState {
   const gameId = uuid();
   const state: GameState = {

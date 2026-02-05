@@ -34,6 +34,15 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         updatedAt: Date.now(),
       };
 
+    case 'INTRODUCE_NPC':
+      return {
+        ...state,
+        npcs: state.npcs.map((n) =>
+          n.id === action.npcId ? { ...n, introduced: true } : n
+        ),
+        updatedAt: Date.now(),
+      };
+
     case 'MOVE_LOCATION':
       return {
         ...state,
@@ -48,7 +57,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         locations: state.locations.map((l) =>
-          l.id === action.locationId ? { ...l } : l
+          l.id === action.locationId ? { ...l, unlocked: true } : l
         ),
         updatedAt: Date.now(),
       };

@@ -28,12 +28,19 @@ export function createClaudeProvider(apiKey: string): LlmProvider {
         throw new Error(`Claude API error (${response.status}): ${error}`);
       }
 
-      const data: any = await response.json();
+      const data = (await response.json()) as {
+        content?: { text?: string }[];
+        usage?: { input_tokens?: number; output_tokens?: number };
+      };
+      const content = data?.content?.[0]?.text;
+      if (!content) {
+        throw new Error('Claude API returned unexpected response structure');
+      }
       return {
-        content: data.content[0].text,
+        content,
         usage: {
-          inputTokens: data.usage.input_tokens,
-          outputTokens: data.usage.output_tokens,
+          inputTokens: data.usage?.input_tokens ?? 0,
+          outputTokens: data.usage?.output_tokens ?? 0,
         },
       };
     },

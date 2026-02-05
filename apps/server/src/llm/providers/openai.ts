@@ -29,12 +29,19 @@ export function createOpenAiProvider(apiKey: string): LlmProvider {
         throw new Error(`OpenAI API error (${response.status}): ${error}`);
       }
 
-      const data: any = await response.json();
+      const data = (await response.json()) as {
+        choices?: { message?: { content?: string } }[];
+        usage?: { prompt_tokens?: number; completion_tokens?: number };
+      };
+      const content = data?.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error('OpenAI API returned unexpected response structure');
+      }
       return {
-        content: data.choices[0].message.content,
+        content,
         usage: {
-          inputTokens: data.usage.prompt_tokens,
-          outputTokens: data.usage.completion_tokens,
+          inputTokens: data.usage?.prompt_tokens ?? 0,
+          outputTokens: data.usage?.completion_tokens ?? 0,
         },
       };
     },

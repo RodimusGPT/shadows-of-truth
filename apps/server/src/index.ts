@@ -8,7 +8,9 @@ import { chatRoutes } from './routes/chat';
 const app = Fastify({ logger: true });
 
 async function start() {
-  await app.register(cors, { origin: true });
+  // CORS: use ALLOWED_ORIGINS env var in production, allow all in development
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? true;
+  await app.register(cors, { origin: allowedOrigins });
   await app.register(healthRoutes);
   await app.register(gameRoutes);
   await app.register(chatRoutes);

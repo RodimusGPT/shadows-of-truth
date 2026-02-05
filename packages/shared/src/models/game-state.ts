@@ -47,6 +47,7 @@ export type GameAction =
   | { type: 'DISCOVER_CLUE'; clueId: string; turn: number }
   | { type: 'UPDATE_TRUST'; npcId: string; delta: number }
   | { type: 'UPDATE_MOOD'; npcId: string; mood: string }
+  | { type: 'INTRODUCE_NPC'; npcId: string }
   | { type: 'MOVE_LOCATION'; locationId: string }
   | { type: 'UNLOCK_LOCATION'; locationId: string }
   | { type: 'ADD_MESSAGE'; message: ChatMessage }

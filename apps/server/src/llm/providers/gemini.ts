@@ -36,10 +36,13 @@ export function createGeminiProvider(apiKey: string, model?: string): LlmProvide
       }
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey, // Header auth instead of URL param
+          },
           body: JSON.stringify(body),
         }
       );
@@ -49,9 +52,16 @@ export function createGeminiProvider(apiKey: string, model?: string): LlmProvide
         throw new Error(`Gemini API error (${response.status}): ${error}`);
       }
 
-      const data: any = await response.json();
+      const data = (await response.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+        usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
+      };
+      const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!content) {
+        throw new Error('Gemini API returned unexpected response structure');
+      }
       return {
-        content: data.candidates[0].content.parts[0].text,
+        content,
         usage: {
           inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
           outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,

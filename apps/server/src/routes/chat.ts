@@ -9,7 +9,15 @@ import { cases } from '../data/cases';
 
 export async function chatRoutes(app: FastifyInstance) {
   app.post<{ Body: ChatRequest }>('/api/chat', async (request, reply) => {
-    const { gameId, message, targetNpcId } = request.body;
+    const { gameId, message, targetNpcId } = request.body ?? {};
+
+    // Input validation
+    if (!gameId || typeof gameId !== 'string') {
+      return reply.status(400).send({ error: 'gameId is required' });
+    }
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return reply.status(400).send({ error: 'message is required' });
+    }
 
     const state = getGame(gameId);
     if (!state) {
@@ -30,9 +38,9 @@ export async function chatRoutes(app: FastifyInstance) {
       });
     }
 
-    // Mark NPC as introduced
+    // Mark NPC as introduced on first interaction
     if (!npc.introduced) {
-      dispatch(gameId, { type: 'UPDATE_MOOD', npcId: npc.id, mood: npc.mood });
+      dispatch(gameId, { type: 'INTRODUCE_NPC', npcId: npc.id });
     }
 
     // Record player message

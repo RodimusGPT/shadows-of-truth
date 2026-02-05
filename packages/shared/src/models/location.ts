@@ -11,4 +11,6 @@ export interface Location {
   connectedLocationIds: string[];
   /** Whether the player has visited this location */
   visited: boolean;
+  /** Whether this location is accessible (defaults to true if not specified) */
+  unlocked?: boolean;
 }
