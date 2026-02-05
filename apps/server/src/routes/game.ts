@@ -1,11 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { createGame, getGame, listGames } from '../game-state';
-import { missingHeiress } from '../data/cases/missing-heiress';
-import { CaseDefinition } from '@shadows/shared';
-
-const cases: Record<string, CaseDefinition> = {
-  'missing-heiress': missingHeiress,
-};
+import { cases, caseList } from '../data/cases';
 
 export async function gameRoutes(app: FastifyInstance) {
   app.post<{ Body: { caseId: string } }>('/api/game/new', async (request, reply) => {
@@ -31,12 +26,6 @@ export async function gameRoutes(app: FastifyInstance) {
   });
 
   app.get('/api/cases', async () => {
-    return {
-      cases: Object.values(cases).map((c) => ({
-        id: c.id,
-        title: c.title,
-        synopsis: c.synopsis,
-      })),
-    };
+    return { cases: caseList };
   });
 }

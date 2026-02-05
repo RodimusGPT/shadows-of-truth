@@ -40,11 +40,17 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
+export interface CaseInfo {
+  id: string;
+  title: string;
+  setting: string;
+  synopsis: string;
+}
+
 export const api = {
   health: () => request<{ status: string }>('/health'),
 
-  listCases: () =>
-    request<{ cases: Array<{ id: string; title: string; synopsis: string }> }>('/api/cases'),
+  listCases: () => request<{ cases: CaseInfo[] }>('/api/cases'),
 
   newGame: (caseId: string) =>
     request<{ gameId: string; state: GameState }>('/api/game/new', {

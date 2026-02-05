@@ -5,12 +5,7 @@ import { createLlmProvider } from '../llm';
 import { parseResponse } from '../llm/response-parser';
 import { buildSystemPrompt, validateStateChanges, buildConversationWindow } from '../case-engine';
 import { getGame, applyStateChanges, addMessage, dispatch } from '../game-state';
-import { missingHeiress } from '../data/cases/missing-heiress';
-import { CaseDefinition } from '@shadows/shared';
-
-const cases: Record<string, CaseDefinition> = {
-  'missing-heiress': missingHeiress,
-};
+import { cases } from '../data/cases';
 
 export async function chatRoutes(app: FastifyInstance) {
   app.post<{ Body: ChatRequest }>('/api/chat', async (request, reply) => {
