@@ -15,5 +15,23 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemma-3-27b-it
+      - key: IMAGE_PROVIDER
+        value: huggingface
+      - key: HUGGINGFACE_API_KEY
+        sync: false
     healthCheckPath: /health
+    plan: free
+
+  - type: web
+    name: shadows-of-truth-web
+    runtime: static
+    buildCommand: pnpm install && pnpm --filter @shadows/mobile build:web
+    staticPublishPath: apps/mobile/dist
+    envVars:
+      - key: EXPO_PUBLIC_API_URL
+        value: https://shadows-of-truth-api.onrender.com
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
     plan: free
