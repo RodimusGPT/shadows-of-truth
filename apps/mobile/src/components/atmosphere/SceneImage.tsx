@@ -28,7 +28,9 @@ interface SceneImageProps {
  * - Configurable aspect ratios
  */
 /** Collapsed thumbnail height */
-const COLLAPSED_HEIGHT = 80;
+const COLLAPSED_HEIGHT = 120;
+/** Expanded height */
+const EXPANDED_HEIGHT = 280;
 
 export function SceneImage({
   base64,
@@ -71,7 +73,7 @@ export function SceneImage({
 
   // For collapsible mode, we use fixed heights instead of aspect ratio
   const containerStyle = collapsible
-    ? [styles.container, { height: expanded ? 200 : COLLAPSED_HEIGHT }]
+    ? [styles.container, { height: expanded ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT }]
     : [styles.container, aspectStyles[aspectRatio]];
 
   const content = (
@@ -97,7 +99,7 @@ export function SceneImage({
             source={{ uri }}
             style={styles.image}
             onLoad={() => setImageLoaded(true)}
-            resizeMode="cover"
+            resizeMode={collapsible && !expanded ? "contain" : "cover"}
           />
         </Animated.View>
       )}
