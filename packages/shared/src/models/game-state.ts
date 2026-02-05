@@ -2,6 +2,7 @@ import { Clue, ClueConnection } from './clue';
 import { Npc } from './npc';
 import { Location } from './location';
 import { ChatMessage } from './chat';
+import { Suspect, NarrativeMemory, EstablishedFact } from './narrative';
 
 export interface CaseDefinition {
   id: string;
@@ -9,7 +10,21 @@ export interface CaseDefinition {
   synopsis: string;
   setting: string;
   atmosphere: string;
-  solution: string;
+  /**
+   * For fixed-solution cases: the predetermined truth
+   * For emergent cases: leave empty or use as "canonical" reference
+   */
+  solution?: string;
+  /**
+   * For emergent narrative: suspects with possible motives/methods
+   * If present, enables emergent narrative mode
+   */
+  suspects?: Suspect[];
+  /**
+   * Minimum coherence score (0-100) for an accusation to succeed
+   * Default: 60
+   */
+  coherenceThreshold?: number;
   npcs: Npc[];
   locations: Location[];
   clues: Clue[];
@@ -41,6 +56,8 @@ export interface GameState {
   createdAt: number;
   /** Timestamp of last update */
   updatedAt: number;
+  /** Emergent narrative memory — tracks established facts and player theories */
+  narrativeMemory?: NarrativeMemory;
 }
 
 export type GameAction =
@@ -53,4 +70,8 @@ export type GameAction =
   | { type: 'ADD_MESSAGE'; message: ChatMessage }
   | { type: 'UPDATE_SUMMARY'; summary: string }
   | { type: 'SOLVE_CASE' }
-  | { type: 'INCREMENT_TURN' };
+  | { type: 'INCREMENT_TURN' }
+  // Emergent narrative actions
+  | { type: 'ESTABLISH_FACT'; fact: EstablishedFact }
+  | { type: 'RECORD_THEORY'; theory: { content: string; suspectNpcId?: string }; turn: number }
+  | { type: 'SHIFT_RELATIONSHIP'; npcId: string; direction: 'trust' | 'antagonize' };

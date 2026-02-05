@@ -1,6 +1,7 @@
 {
   "name": "shadows-of-truth",
   "private": true,
+  "packageManager": "pnpm@9.15.5",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",

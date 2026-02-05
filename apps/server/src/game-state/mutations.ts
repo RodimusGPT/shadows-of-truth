@@ -1,4 +1,14 @@
-import { GameState, GameAction, ChatMessage } from '@shadows/shared';
+import { GameState, GameAction, ChatMessage, NarrativeMemory } from '@shadows/shared';
+
+/** Initialize empty narrative memory */
+function initNarrativeMemory(): NarrativeMemory {
+  return {
+    establishedFacts: [],
+    playerTheories: [],
+    trustedNpcs: [],
+    antagonizedNpcs: [],
+  };
+}
 
 /** Pure state reducer — returns a new GameState without mutating the original */
 export function applyAction(state: GameState, action: GameAction): GameState {
@@ -89,6 +99,48 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         turn: state.turn + 1,
         updatedAt: Date.now(),
       };
+
+    // Emergent narrative actions
+    case 'ESTABLISH_FACT': {
+      const memory = state.narrativeMemory ?? initNarrativeMemory();
+      return {
+        ...state,
+        narrativeMemory: {
+          ...memory,
+          establishedFacts: [...memory.establishedFacts, action.fact],
+        },
+        updatedAt: Date.now(),
+      };
+    }
+
+    case 'RECORD_THEORY': {
+      const memory = state.narrativeMemory ?? initNarrativeMemory();
+      return {
+        ...state,
+        narrativeMemory: {
+          ...memory,
+          playerTheories: [
+            ...memory.playerTheories,
+            { ...action.theory, turn: action.turn },
+          ],
+        },
+        updatedAt: Date.now(),
+      };
+    }
+
+    case 'SHIFT_RELATIONSHIP': {
+      const memory = state.narrativeMemory ?? initNarrativeMemory();
+      const { npcId, direction } = action;
+      const trustedNpcs = memory.trustedNpcs.filter((id) => id !== npcId);
+      const antagonizedNpcs = memory.antagonizedNpcs.filter((id) => id !== npcId);
+      if (direction === 'trust') trustedNpcs.push(npcId);
+      else antagonizedNpcs.push(npcId);
+      return {
+        ...state,
+        narrativeMemory: { ...memory, trustedNpcs, antagonizedNpcs },
+        updatedAt: Date.now(),
+      };
+    }
 
     default:
       return state;

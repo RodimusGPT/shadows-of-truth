@@ -1,4 +1,4 @@
-import { CaseDefinition, GameState, Npc } from '@shadows/shared';
+import { CaseDefinition, GameState, Npc, NarrativeMemory } from '@shadows/shared';
 
 /** Layer 1: World Frame — immutable character constraint */
 export function worldFrame(caseDefinition: CaseDefinition): string {
@@ -54,12 +54,34 @@ export function currentGameState(state: GameState, caseDefinition: CaseDefinitio
   const currentLocation = state.locations.find((l) => l.id === state.currentLocationId);
   const npcTrust = state.npcs.map((n) => `${n.name}: ${n.trustLevel}/100`);
 
+  let narrativeContext = '';
+  if (state.narrativeMemory) {
+    narrativeContext = formatNarrativeMemory(state.narrativeMemory);
+  }
+
   return `CURRENT GAME STATE (Turn ${state.turn}):
 LOCATION: ${currentLocation?.name ?? 'Unknown'}
 CLUES DISCOVERED (${discoveredClues.length}/${state.clues.length}): ${discoveredClues.join(', ') || 'None'}
 NPC TRUST LEVELS: ${npcTrust.join(', ')}
-
+${narrativeContext}
 ${state.conversationSummary ? `EARLIER CONVERSATION SUMMARY:\n${state.conversationSummary}` : ''}`;
+}
+
+/** Format narrative memory for prompt injection */
+function formatNarrativeMemory(memory: NarrativeMemory): string {
+  const parts: string[] = [];
+
+  if (memory.establishedFacts.length > 0) {
+    const facts = memory.establishedFacts.map((f) => `- ${f.content}`).join('\n');
+    parts.push(`ESTABLISHED FACTS (treat as true in the narrative):\n${facts}`);
+  }
+
+  if (memory.playerTheories.length > 0) {
+    const theories = memory.playerTheories.slice(-3).map((t) => `- ${t.content}`).join('\n');
+    parts.push(`PLAYER'S CURRENT THEORIES:\n${theories}`);
+  }
+
+  return parts.length > 0 ? '\n' + parts.join('\n') : '';
 }
 
 /** Layer 6: Output Format Contract */
@@ -73,7 +95,16 @@ state_changes: new_clues=discovered clue IDs, trust_change=NPC ID to delta (-10 
 
 /** Layer 7: Guardrails — hard constraints */
 export function guardrails(caseDefinition: CaseDefinition): string {
-  return `RULES: Never reveal solution ("${caseDefinition.solution.slice(0, 50)}..."). Never fabricate clues/characters/locations. Stay in period. Never break character or acknowledge being AI. Keep responses under 200 words. Trust changes: +1 to +3 (good), -1 to -5 (bad).`;
+  const isEmergent = caseDefinition.suspects && caseDefinition.suspects.length > 0;
+
+  if (isEmergent) {
+    // Emergent narrative: no fixed solution to protect
+    return `RULES: Never fabricate clues/characters/locations outside the case definition. Stay in period. Never break character or acknowledge being AI. Keep responses under 200 words. Trust changes: +1 to +3 (good), -1 to -5 (bad). In emergent mode: respond authentically to accusations — you may confess if cornered with sufficient evidence.`;
+  }
+
+  // Fixed solution mode
+  const solutionHint = caseDefinition.solution?.slice(0, 50) ?? 'undisclosed';
+  return `RULES: Never reveal solution ("${solutionHint}..."). Never fabricate clues/characters/locations. Stay in period. Never break character or acknowledge being AI. Keep responses under 200 words. Trust changes: +1 to +3 (good), -1 to -5 (bad).`;
 }
 
 /** Assemble all 7 layers into a complete system prompt */

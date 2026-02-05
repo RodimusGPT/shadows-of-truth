@@ -9,8 +9,74 @@ export const missingHeiress: CaseDefinition = {
     '1947 Los Angeles — from the manicured lawns of Bel Air to the smoky jazz clubs of Central Avenue, the neon-lit bars of Hollywood Boulevard, and the fog-shrouded docks of San Pedro.',
   atmosphere:
     'Perpetual dusk. Rain threatens but never quite falls. Cigarette smoke curls through every room. Jazz drifts from somewhere unseen. Trust is a currency nobody can afford.',
+  // Canonical solution (for reference, not enforced in emergent mode)
   solution:
     'Vivian staged her own disappearance with help from her lover, jazz musician Marcus Cole. She discovered her father was smuggling weapons through Ashworth Shipping and planned to go to the authorities. Harold, learning of her intentions, was going to have her committed to a sanitarium. Marcus helped her escape to San Francisco with evidence of the smuggling operation.',
+
+  // EMERGENT NARRATIVE: Multiple suspects with valid theories
+  suspects: [
+    {
+      npcId: 'harold',
+      possibleMotives: [
+        'Silencing Vivian to protect his smuggling operation',
+        'Controlling his rebellious daughter through institutionalization',
+        'Preventing scandal from her relationship with Marcus',
+      ],
+      possibleMethods: [
+        'Arranged her commitment to a sanitarium',
+        'Had Frank "handle" her disappearance',
+        'Forced her into hiding with threats',
+      ],
+      supportingClueIds: ['shipping-records', 'sanitarium-plan', 'vivian-argument'],
+      exoneratingClueIds: ['vivian-alive', 'escape-plan'],
+    },
+    {
+      npcId: 'marcus',
+      possibleMotives: [
+        'Helped Vivian escape her controlling father',
+        'Protecting her from Harold\'s retaliation',
+        'Running away together to start a new life',
+      ],
+      possibleMethods: [
+        'Orchestrated her voluntary disappearance',
+        'Smuggled her out of the city',
+        'Arranged new identity and safe passage',
+      ],
+      supportingClueIds: ['love-letters', 'night-of-disappearance', 'matchbook'],
+      exoneratingClueIds: [],
+    },
+    {
+      npcId: 'frank',
+      possibleMotives: [
+        'Following Harold\'s orders to make her disappear',
+        'Eliminating a witness to the smuggling',
+        'Personal grudge or separate agenda',
+      ],
+      possibleMethods: [
+        'Abducted her on Harold\'s orders',
+        'Made her "disappear" permanently',
+        'Handed her off to associates',
+      ],
+      supportingClueIds: ['frank-surveillance', 'shipping-records'],
+      exoneratingClueIds: ['vivian-alive', 'escape-plan'],
+    },
+    {
+      npcId: 'dorothy',
+      possibleMotives: [
+        'Helping Vivian escape like she helped her mother',
+        'Protecting the daughter she raised',
+        'Loyalty to Vivian over Harold',
+      ],
+      possibleMethods: [
+        'Facilitated the escape plan',
+        'Provided cover and misdirection',
+        'Connected Vivian with Marcus for help',
+      ],
+      supportingClueIds: ['love-letters', 'night-of-disappearance'],
+      exoneratingClueIds: [],
+    },
+  ],
+  coherenceThreshold: 55, // Fairly generous — mystery stories should reward clever theories
 
   npcs: [
     {
