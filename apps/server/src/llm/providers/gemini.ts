@@ -1,7 +1,9 @@
 import { LlmProvider, LlmRequest, LlmResponse } from '../types';
 
+// Free tier models: gemini-2.0-flash-lite, gemini-2.0-flash, gemini-1.5-flash, gemini-1.5-flash-8b
+// See: https://ai.google.dev/pricing
 export function createGeminiProvider(apiKey: string, model?: string): LlmProvider {
-  const geminiModel = model ?? process.env.GEMINI_MODEL ?? 'gemini-2.0-flash';
+  const geminiModel = model ?? process.env.GEMINI_MODEL ?? 'gemini-2.0-flash-lite';
   // Gemma models don't support systemInstruction — fold it into the first user message
   const supportsSystemInstruction = !geminiModel.startsWith('gemma');
 
