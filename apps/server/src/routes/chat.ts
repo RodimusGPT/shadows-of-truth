@@ -81,7 +81,7 @@ export async function chatRoutes(app: FastifyInstance) {
     const llmResponse = await llmProvider.generate({
       systemPrompt,
       messages: conversationMessages,
-      maxTokens: 1024,
+      maxTokens: 512, // NPC responses should be <200 words per guardrails
       temperature: 0.8,
     });
 

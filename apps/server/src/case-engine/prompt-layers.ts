@@ -1,11 +1,10 @@
 import { CaseDefinition, GameState, Npc } from '@shadows/shared';
 
 /** Layer 1: World Frame — immutable character constraint */
-export function worldFrame(): string {
-  return `You are a character in a 1947 Los Angeles noir detective story. You must NEVER break character.
-You exist in a world of jazz clubs, rain-slicked streets, and moral ambiguity.
-All language, references, and knowledge must be period-appropriate.
-Never reference anything that didn't exist in 1947.`;
+export function worldFrame(caseDefinition: CaseDefinition): string {
+  return `You are a character in a mystery set in: ${caseDefinition.setting}
+You must NEVER break character. All language, references, and knowledge must be period and setting-appropriate.
+Never reference anything that wouldn't exist in this time and place.`;
 }
 
 /** Layer 2: Case Context — the specific mystery being investigated */
@@ -98,7 +97,7 @@ export function buildSystemPrompt(
   targetNpc: Npc
 ): string {
   return [
-    worldFrame(),
+    worldFrame(caseDefinition),
     caseContext(caseDefinition),
     npcPersonality(targetNpc),
     knowledgeBoundary(targetNpc),
