@@ -8,6 +8,7 @@ import {
   generateClueImage,
   getCacheStats,
   isImageGenerationAvailable,
+  getImageProvider,
 } from '../services/image-generator';
 
 interface LocationImageParams {
@@ -220,12 +221,21 @@ export async function imageRoutes(app: FastifyInstance) {
    */
   app.get('/api/image/status', async () => {
     const available = isImageGenerationAvailable();
+    const provider = getImageProvider();
+
+    const providerInfo: Record<string, string> = {
+      huggingface: 'Using free Hugging Face FLUX.1-schnell — no API key required (optional key for higher limits)',
+      pollinations: 'Using free Pollinations.ai — no API key required',
+      gemini: `Using Gemini model: ${process.env.GEMINI_IMAGE_MODEL ?? 'gemini-2.5-flash-image'}`,
+    };
+
     return {
       available,
+      provider,
       message: available
-        ? 'Image generation is enabled'
-        : 'Image generation is disabled. Set ENABLE_IMAGE_GENERATION=true and ensure your Gemini API key has image generation quota.',
-      model: process.env.GEMINI_IMAGE_MODEL ?? 'gemini-2.5-flash-image',
+        ? `Image generation enabled using ${provider}`
+        : 'Image generation is disabled.',
+      info: providerInfo[provider] ?? 'Unknown provider',
     };
   });
 }

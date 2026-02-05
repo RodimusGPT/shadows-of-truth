@@ -1,6 +1,19 @@
 import { GeneratedImage } from '@shadows/shared';
 import { generateGeminiImage } from '../llm/providers/gemini';
+import { generatePollinationsImage } from '../llm/providers/pollinations';
+import { generateHuggingFaceImage } from '../llm/providers/huggingface';
 import { buildImagePrompt, styleModifiers } from '../data/visual-anchors';
+
+/** Available image generation providers */
+export type ImageProvider = 'huggingface' | 'pollinations' | 'gemini';
+
+/** Get the configured image provider */
+export function getImageProvider(): ImageProvider {
+  const provider = process.env.IMAGE_PROVIDER as ImageProvider;
+  if (provider === 'gemini') return 'gemini';
+  if (provider === 'pollinations') return 'pollinations';
+  return 'huggingface'; // Default to reliable free provider
+}
 
 /** In-memory cache for generated images */
 const imageCache = new Map<string, GeneratedImage>();
@@ -42,6 +55,12 @@ export interface SceneImageRequest {
 
 /** Check if image generation is available */
 export function isImageGenerationAvailable(): boolean {
+  const provider = getImageProvider();
+  // Free providers are always available
+  if (provider === 'pollinations' || provider === 'huggingface') {
+    return true;
+  }
+  // Gemini requires API key and explicit enable
   return !!process.env.GEMINI_API_KEY && process.env.ENABLE_IMAGE_GENERATION === 'true';
 }
 
@@ -51,22 +70,14 @@ export function isImageGenerationAvailable(): boolean {
  * Uses cached images when available to ensure consistency
  * and reduce API calls.
  *
- * Note: Image generation requires ENABLE_IMAGE_GENERATION=true
- * and a Gemini API key with image generation quota.
+ * Providers:
+ * - 'pollinations' (default): Free, no API key needed
+ * - 'gemini': Requires GEMINI_API_KEY + ENABLE_IMAGE_GENERATION=true
  */
 export async function generateSceneImage(
   request: SceneImageRequest
 ): Promise<GeneratedImage> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY required for image generation');
-  }
-
-  if (!isImageGenerationAvailable()) {
-    throw new Error(
-      'Image generation is disabled. Set ENABLE_IMAGE_GENERATION=true and ensure your API key has image generation quota.'
-    );
-  }
+  const provider = getImageProvider();
 
   // Build the full prompt with visual anchors
   const fullPrompt = buildImagePrompt(request.caseId, request.scene, {
@@ -86,8 +97,33 @@ export async function generateSceneImage(
     }
   }
 
-  // Generate new image
-  const image = await generateGeminiImage(apiKey, fullPrompt);
+  // Generate new image based on provider
+  let image: GeneratedImage;
+
+  switch (provider) {
+    case 'gemini': {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY required for Gemini image generation');
+      }
+      image = await generateGeminiImage(apiKey, fullPrompt);
+      break;
+    }
+    case 'pollinations': {
+      image = await generatePollinationsImage(fullPrompt, {
+        width: 1024,
+        height: 576,
+      });
+      break;
+    }
+    case 'huggingface':
+    default: {
+      // Hugging Face (free, reliable, default)
+      const hfKey = process.env.HUGGINGFACE_API_KEY; // Optional
+      image = await generateHuggingFaceImage(fullPrompt, hfKey);
+      break;
+    }
+  }
 
   // Cache the result
   cacheWithTimestamp.set(cacheKey, {
