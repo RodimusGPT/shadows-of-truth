@@ -90,6 +90,11 @@ export default function ChatScreen() {
           isLoading={sceneImage.isLoading}
           collapsible
         />
+        {sceneImage.error && (
+          <Text style={styles.imageError}>
+            Image error: {sceneImage.error}
+          </Text>
+        )}
       </View>
 
       {currentNpc && (
@@ -141,6 +146,12 @@ const styles = StyleSheet.create({
   sceneImageContainer: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
+  },
+  imageError: {
+    ...typography.caption,
+    color: colors.accent.blood,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   messageList: {
     paddingHorizontal: spacing.md,
