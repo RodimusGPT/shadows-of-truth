@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  Platform,
+  NativeSyntheticEvent,
+  TextInputKeyPressEventData,
+} from 'react-native';
 import { colors, typography, spacing, radius } from '../../theme';
 
 interface ChatInputProps {
@@ -17,6 +26,14 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
     setText('');
   };
 
+  // On web, Enter sends (Shift+Enter for newline). On native, onSubmitEditing handles it.
+  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -29,7 +46,9 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
         maxLength={500}
         editable={!disabled}
         onSubmitEditing={handleSend}
+        onKeyPress={handleKeyPress}
         returnKeyType="send"
+        blurOnSubmit={false}
       />
       <TouchableOpacity
         style={[styles.sendButton, (!text.trim() || disabled) && styles.sendDisabled]}
