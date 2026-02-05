@@ -1,7 +1,7 @@
 import { ChatMessage } from '@shadows/shared';
 import { LlmMessage } from '../llm/types';
 
-const MAX_HISTORY_MESSAGES = 20;
+const MAX_HISTORY_MESSAGES = 10; // Reduced from 20 to save ~500 tokens per request
 
 /**
  * Builds the LLM conversation window:
