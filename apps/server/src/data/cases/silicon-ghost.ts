@@ -228,7 +228,7 @@ export const siliconGhost: CaseDefinition = {
       description: 'Marin Headlands viewpoint where Marcus\'s Tesla was found.',
       atmosphere: 'Wind whips off the Pacific. Crime scene tape flutters where the car was.',
       npcIds: [],
-      searchableClueIds: ['overlook-witness'],
+      searchableClueIds: ['second-vehicle'],
       connectedLocationIds: ['coffee-shop'],
       visited: false,
     },
@@ -325,6 +325,16 @@ export const siliconGhost: CaseDefinition = {
       discovered: false,
       tags: ['testimony'],
     },
+    {
+      id: 'second-vehicle',
+      name: 'Second Set of Tire Tracks',
+      description: 'Fresh tire tracks in the gravel beside where the Tesla was found. A larger vehicle — SUV-sized — parked here recently.',
+      sourceId: 'overlook',
+      trustThreshold: 0,
+      prerequisites: ['tesla-location'],
+      discovered: false,
+      tags: ['physical'],
+    },
   ],
 
   clueConnections: [
@@ -333,5 +343,6 @@ export const siliconGhost: CaseDefinition = {
     { fromClueId: 'burner-phone', toClueId: 'system-access', relationship: '"A.T." could be Alex Torres' },
     { fromClueId: 'ipo-pressure', toClueId: 'fund-trouble', relationship: 'Priya needed the IPO more than a clean exit' },
     { fromClueId: 'system-access', toClueId: 'overlook-witness', relationship: 'Alex had means and was present' },
+    { fromClueId: 'second-vehicle', toClueId: 'overlook-witness', relationship: 'Someone else was at the overlook that night' },
   ],
 };
