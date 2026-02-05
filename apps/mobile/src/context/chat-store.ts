@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { ChatMessage, ChatResponse, StateChange } from '@shadows/shared';
 import { api } from '../services/api';
+import { storage } from '../services/storage';
 import { useGameStore } from './game-store';
 
 interface ChatStore {
@@ -47,6 +48,33 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // Refresh full game state to pick up all changes
       await useGameStore.getState().refreshState();
     } catch (err) {
+      const errMsg = (err as Error).message ?? '';
+
+      // Server lost the game (restarted / hibernated) — auto-recreate
+      if (errMsg.includes('404')) {
+        try {
+          const { gameId, state } = await api.newGame(gameState.caseId);
+          useGameStore.setState({ gameState: state, error: null });
+          await storage.saveCurrentGameId(gameId);
+
+          // Retry the message on the fresh game
+          const retryResponse: ChatResponse = await api.chat({
+            gameId,
+            message,
+            targetNpcId,
+          });
+          set((s) => ({
+            messages: [...s.messages, retryResponse.message],
+            isSending: false,
+            lastStateChanges: retryResponse.stateChanges,
+          }));
+          await useGameStore.getState().refreshState();
+          return;
+        } catch {
+          // Fall through to generic error
+        }
+      }
+
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'system',

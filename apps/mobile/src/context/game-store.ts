@@ -54,8 +54,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       const { state: fresh } = await api.getGame(state.gameId);
       set({ gameState: fresh });
-    } catch (err) {
-      set({ error: (err as Error).message });
+    } catch {
+      // Game gone from server — silently ignore; chat store handles re-creation
     }
   },
 
