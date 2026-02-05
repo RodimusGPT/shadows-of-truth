@@ -3,8 +3,8 @@ import { GeneratedImage } from '@shadows/shared';
 /**
  * Hugging Face Inference API — Free tier image generation.
  *
- * Uses stabilityai/stable-diffusion-xl-base-1.0 which has free serverless inference.
- * Note: FLUX models require paid inference endpoints.
+ * Uses the new router.huggingface.co endpoint (as of 2025).
+ * Requires API key for authentication.
  *
  * @see https://huggingface.co/docs/api-inference/
  */
@@ -12,18 +12,18 @@ export async function generateHuggingFaceImage(
   prompt: string,
   apiKey?: string
 ): Promise<GeneratedImage> {
-  // Use SDXL which has free serverless inference
-  const model = 'stabilityai/stable-diffusion-xl-base-1.0';
-  const url = `https://api-inference.huggingface.co/models/${model}`;
+  if (!apiKey) {
+    throw new Error('HUGGINGFACE_API_KEY is required for image generation');
+  }
+
+  // Use FLUX.1-schnell for fast generation, or SDXL as fallback
+  const model = process.env.HF_IMAGE_MODEL ?? 'black-forest-labs/FLUX.1-schnell';
+  const url = `https://router.huggingface.co/hf-inference/models/${model}`;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
   };
-
-  // API key is optional for some models but required for SDXL
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  }
 
   const response = await fetch(url, {
     method: 'POST',
