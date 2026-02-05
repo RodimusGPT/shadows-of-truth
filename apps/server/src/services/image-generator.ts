@@ -11,8 +11,8 @@ export type ImageProvider = 'huggingface' | 'pollinations' | 'gemini';
 export function getImageProvider(): ImageProvider {
   const provider = process.env.IMAGE_PROVIDER as ImageProvider;
   if (provider === 'gemini') return 'gemini';
-  if (provider === 'pollinations') return 'pollinations';
-  return 'huggingface'; // Default to reliable free provider
+  if (provider === 'huggingface') return 'huggingface';
+  return 'pollinations'; // Default to no-key-required provider
 }
 
 /** In-memory cache for generated images */
