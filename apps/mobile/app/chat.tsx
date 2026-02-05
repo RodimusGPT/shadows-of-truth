@@ -5,8 +5,10 @@ import { ChatMessage } from '@shadows/shared';
 import { ChatBubble } from '../src/components/chat/ChatBubble';
 import { ChatInput } from '../src/components/chat/ChatInput';
 import { TypingIndicator } from '../src/components/chat/TypingIndicator';
+import { SceneImage } from '../src/components/atmosphere/SceneImage';
 import { useChat } from '../src/hooks/useChat';
 import { useGameStore } from '../src/context/game-store';
+import { useNpcPortrait, useLocationImage } from '../src/hooks/useSceneImage';
 import { storage } from '../src/services/storage';
 import { colors, typography, spacing } from '../src/theme';
 
@@ -20,6 +22,13 @@ export default function ChatScreen() {
     (l) => l.id === gameState.currentLocationId
   ) ?? null;
   const flatListRef = useRef<FlatList>(null);
+
+  // Fetch scene images
+  const npcImage = useNpcPortrait(gameState?.gameId, currentNpc?.id);
+  const locationImage = useLocationImage(gameState?.gameId, currentLocation?.id);
+
+  // Show NPC portrait if talking to someone, otherwise show location
+  const sceneImage = currentNpc ? npcImage : locationImage;
 
   // Fallback: if state was lost (e.g. full page reload), restore from storage
   useEffect(() => {
@@ -73,6 +82,16 @@ export default function ChatScreen() {
         }}
       />
 
+      {/* Scene Image */}
+      <View style={styles.sceneImageContainer}>
+        <SceneImage
+          base64={sceneImage.base64 ?? undefined}
+          mimeType={sceneImage.mimeType}
+          isLoading={sceneImage.isLoading}
+          aspectRatio="landscape"
+        />
+      </View>
+
       {currentNpc && (
         <View style={styles.npcBanner}>
           <Text style={styles.npcBannerText}>
@@ -118,6 +137,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg.primary,
+  },
+  sceneImageContainer: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
   },
   messageList: {
     paddingHorizontal: spacing.md,
