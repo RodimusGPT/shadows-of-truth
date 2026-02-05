@@ -4,3 +4,4 @@ export * from './location';
 export * from './chat';
 export * from './game-state';
 export * from './narrative';
+export * from './visuals';

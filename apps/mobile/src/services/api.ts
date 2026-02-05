@@ -47,6 +47,15 @@ export interface CaseInfo {
   synopsis: string;
 }
 
+/** Image response from the API */
+export interface ImageResponse {
+  image: {
+    base64: string;
+    mimeType: string;
+    cacheKey: string;
+  };
+}
+
 export const api = {
   health: () => request<{ status: string }>('/health'),
 
@@ -65,5 +74,32 @@ export const api = {
     request<ChatResponse>('/api/chat', {
       method: 'POST',
       body: JSON.stringify(body),
+    }),
+
+  // Image generation endpoints
+  getLocationImage: (gameId: string, locationId: string) =>
+    request<ImageResponse & { locationId: string; locationName: string }>(
+      `/api/image/location/${gameId}/${locationId}`
+    ),
+
+  getNpcPortrait: (gameId: string, npcId: string) =>
+    request<ImageResponse & { npcId: string; npcName: string; mood: string }>(
+      `/api/image/npc/${gameId}/${npcId}`
+    ),
+
+  getClueImage: (gameId: string, clueId: string) =>
+    request<ImageResponse & { clueId: string; clueName: string }>('/api/image/clue', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, clueId }),
+    }),
+
+  getSceneImage: (
+    gameId: string,
+    scene: string,
+    options?: { npcId?: string; locationId?: string; style?: string }
+  ) =>
+    request<ImageResponse & { scene: string }>('/api/image/scene', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, scene, ...options }),
     }),
 };

@@ -5,6 +5,7 @@ import { healthRoutes } from './routes/health';
 import { gameRoutes } from './routes/game';
 import { chatRoutes } from './routes/chat';
 import { accusationRoutes } from './routes/accusation';
+import { imageRoutes } from './routes/image';
 
 const app = Fastify({ logger: true });
 
@@ -16,6 +17,7 @@ async function start() {
   await app.register(gameRoutes);
   await app.register(chatRoutes);
   await app.register(accusationRoutes);
+  await app.register(imageRoutes);
 
   const port = parseInt(process.env.PORT ?? '3000', 10);
   const host = process.env.HOST ?? '0.0.0.0';
