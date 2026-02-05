@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ActivityIndicator, Image } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { colors } from '../../theme';
+import { StyleSheet, View, ActivityIndicator, Image, Pressable, Text } from 'react-native';
+import Animated, { FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { colors, spacing } from '../../theme';
 
 interface SceneImageProps {
   /** Base64 image data */
@@ -14,6 +14,8 @@ interface SceneImageProps {
   aspectRatio?: 'portrait' | 'landscape' | 'square';
   /** Optional overlay darkness (0-1) */
   overlayOpacity?: number;
+  /** Collapsible mode - starts small, tap to expand */
+  collapsible?: boolean;
 }
 
 /**
@@ -25,20 +27,33 @@ interface SceneImageProps {
  * - Vignette overlay for noir effect
  * - Configurable aspect ratios
  */
+/** Collapsed thumbnail height */
+const COLLAPSED_HEIGHT = 80;
+
 export function SceneImage({
   base64,
   mimeType = 'image/png',
   isLoading = false,
   aspectRatio = 'landscape',
   overlayOpacity = 0.3,
+  collapsible = false,
 }: SceneImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const animatedHeight = useSharedValue(COLLAPSED_HEIGHT);
 
   useEffect(() => {
     if (base64) {
       setImageLoaded(false);
     }
   }, [base64]);
+
+  useEffect(() => {
+    if (collapsible) {
+      // Animate height change (0 = collapsed percentage, 1 = expanded)
+      animatedHeight.value = withTiming(expanded ? 1 : 0, { duration: 300 });
+    }
+  }, [expanded, collapsible]);
 
   const aspectStyles = {
     portrait: { aspectRatio: 9 / 16 },
@@ -48,12 +63,26 @@ export function SceneImage({
 
   const uri = base64 ? `data:${mimeType};base64,${base64}` : undefined;
 
-  return (
-    <View style={[styles.container, aspectStyles[aspectRatio]]}>
+  const handlePress = () => {
+    if (collapsible && base64) {
+      setExpanded(!expanded);
+    }
+  };
+
+  // For collapsible mode, we use fixed heights instead of aspect ratio
+  const containerStyle = collapsible
+    ? [styles.container, { height: expanded ? 200 : COLLAPSED_HEIGHT }]
+    : [styles.container, aspectStyles[aspectRatio]];
+
+  const content = (
+    <View style={containerStyle}>
       {/* Loading state */}
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.accent.gold} />
+          <ActivityIndicator size="small" color={colors.accent.gold} />
+          {collapsible && (
+            <Text style={styles.loadingText}>Loading scene...</Text>
+          )}
         </View>
       )}
 
@@ -76,10 +105,26 @@ export function SceneImage({
       {/* Vignette overlay for noir effect */}
       <View style={[styles.vignette, { opacity: overlayOpacity }]} />
 
-      {/* Top fade for text readability */}
-      <View style={styles.topGradient} />
+      {/* Expand/collapse indicator for collapsible mode */}
+      {collapsible && base64 && !isLoading && (
+        <View style={styles.expandIndicator}>
+          <Text style={styles.expandText}>
+            {expanded ? '▲ Tap to collapse' : '▼ Tap to expand'}
+          </Text>
+        </View>
+      )}
     </View>
   );
+
+  if (collapsible) {
+    return (
+      <Pressable onPress={handlePress} style={styles.pressable}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return content;
 }
 
 /**
@@ -111,11 +156,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
+  pressable: {
+    width: '100%',
+  },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.bg.secondary,
+    gap: spacing.sm,
+  },
+  loadingText: {
+    color: colors.text.muted,
+    fontSize: 12,
   },
   image: {
     width: '100%',
@@ -138,6 +192,20 @@ const styles = StyleSheet.create({
     // Linear gradient from top
     borderTopWidth: 60,
     borderTopColor: 'rgba(0,0,0,0.4)',
+  },
+  expandIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+  },
+  expandText: {
+    color: colors.text.muted,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
   placeholder: {
     justifyContent: 'center',

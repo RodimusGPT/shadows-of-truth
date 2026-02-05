@@ -82,13 +82,13 @@ export default function ChatScreen() {
         }}
       />
 
-      {/* Scene Image */}
+      {/* Scene Image - Collapsible thumbnail */}
       <View style={styles.sceneImageContainer}>
         <SceneImage
           base64={sceneImage.base64 ?? undefined}
           mimeType={sceneImage.mimeType}
           isLoading={sceneImage.isLoading}
-          aspectRatio="landscape"
+          collapsible
         />
       </View>
 
